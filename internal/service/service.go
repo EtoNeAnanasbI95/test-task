@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/EtoNeAnanasbI95/test-task/api"
 	"github.com/EtoNeAnanasbI95/test-task/internal/repository"
 	"log/slog"
 )
@@ -18,7 +19,7 @@ type Service struct {
 	Songs
 }
 
-func NewService(l *slog.Logger, r *repository.Repository) *Service {
+func NewService(l *slog.Logger, apiClient api.ClientInterface, r *repository.Repository) *Service {
 	return &Service{
 		log: l,
 		//Songs: ,

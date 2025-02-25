@@ -4,9 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	test_task "github.com/EtoNeAnanasbI95/test-task"
+	testtask "github.com/EtoNeAnanasbI95/test-task"
+	openApi "github.com/EtoNeAnanasbI95/test-task/api"
 	"github.com/EtoNeAnanasbI95/test-task/internal/config"
 	"github.com/EtoNeAnanasbI95/test-task/internal/handler"
+	"github.com/EtoNeAnanasbI95/test-task/internal/lib/logger/sl"
 	"github.com/EtoNeAnanasbI95/test-task/internal/repository"
 	"github.com/EtoNeAnanasbI95/test-task/internal/service"
 	"github.com/EtoNeAnanasbI95/test-task/internal/storage"
@@ -48,21 +50,28 @@ func main() {
 		slog.Int("port", cfg.ApiPort))
 
 	db := storage.MustInitDB(cfg.ConnectionString)
-
 	log.Debug("Init db connection",
 		slog.String("dsn", cfg.ConnectionString))
 
 	r := repository.NewRepository(log, db)
+	log.Info("Init repository layer")
 
-	s := service.NewService(log, r)
-	// TODO: добавить зависимость с клиентом open api
+	apiClient := mustInitAPIClient(log, cfg.ExternalApiUrlBase)
+	log.Debug("Init API client",
+		slog.String("base url", cfg.ExternalApiUrlBase))
+
+	s := service.NewService(log, apiClient, r)
+	log.Info("Init service layer")
+
 	apiHandler := handler.NewHandler(log, s)
+	log.Info("Init handler layer")
 	api := apiHandler.InitRouts()
-	srv := new(test_task.Server)
+	log.Debug("Init routing scheme")
+	srv := new(testtask.Server)
 
 	go func() {
 		if err := srv.Run(api, cfg); err != nil {
-			log.Error(err.Error())
+			log.Error("Can not start web server: ", err.Error())
 		}
 	}()
 	log.Info("Api is running")
@@ -78,6 +87,15 @@ func main() {
 	if err := srv.Stop(context.Background()); err != nil {
 		log.Error(err.Error())
 	}
+}
+
+func mustInitAPIClient(log *slog.Logger, baseURL string) *openApi.Client {
+	apiClient, err := openApi.NewClient(baseURL)
+	if err != nil {
+		log.Error("Can not init api client", sl.Err(err))
+		panic("failed to initialize API client")
+	}
+	return apiClient
 }
 
 func setupLogger(env string) *slog.Logger {

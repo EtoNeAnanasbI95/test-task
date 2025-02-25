@@ -13,17 +13,25 @@ func (h *Handler) GetSongs() gin.HandlerFunc {
 }
 
 func (h *Handler) GetSongLyrics() gin.HandlerFunc {
-	panic("implement me")
+	return func(context *gin.Context) {
+		panic("implement me")
+	}
 }
 
 func (h *Handler) DeleteSong() gin.HandlerFunc {
-	panic("implement me")
+	return func(context *gin.Context) {
+		panic("implement me")
+	}
 }
 
 func (h *Handler) UpdateSong() gin.HandlerFunc {
-	panic("implement me")
+	return func(context *gin.Context) {
+		panic("implement me")
+	}
 }
 
 func (h *Handler) AddSong() gin.HandlerFunc {
-	panic("implement me")
+	return func(context *gin.Context) {
+		panic("implement me")
+	}
 }
