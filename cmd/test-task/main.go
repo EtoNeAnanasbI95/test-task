@@ -12,6 +12,8 @@ import (
 	"github.com/EtoNeAnanasbI95/test-task/internal/repository"
 	"github.com/EtoNeAnanasbI95/test-task/internal/service"
 	"github.com/EtoNeAnanasbI95/test-task/internal/storage"
+	"github.com/rs/zerolog"
+	slogzerolog "github.com/samber/slog-zerolog/v2"
 	"log"
 	"log/slog"
 	"os"
@@ -65,7 +67,8 @@ func main() {
 
 	apiHandler := handler.NewHandler(log, s)
 	log.Info("Init handler layer")
-	api := apiHandler.InitRouts()
+	api := apiHandler.InitRouts(log)
+
 	log.Debug("Init routing scheme")
 	srv := new(testtask.Server)
 
@@ -101,15 +104,15 @@ func mustInitAPIClient(log *slog.Logger, baseURL string) *openApi.Client {
 func setupLogger(env string) *slog.Logger {
 	var logger *slog.Logger
 
+	zerologLogger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	switch env {
 	case envLocal:
-		logger = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
+		logger = slog.New(slogzerolog.Option{Level: slog.LevelDebug, Logger: &zerologLogger}.NewZerologHandler())
 	case envProd:
-		logger = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-		)
+		logger = slog.New(slogzerolog.Option{Level: slog.LevelInfo, Logger: &zerologLogger}.NewZerologHandler())
+	default:
+		logger = slog.New(slogzerolog.Option{Level: slog.LevelInfo, Logger: &zerologLogger}.NewZerologHandler())
 	}
-	return logger
+	return logger.With("env", env)
 }
