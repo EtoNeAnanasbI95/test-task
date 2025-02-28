@@ -81,8 +81,8 @@ func (h *Handler) UpdateSong() gin.HandlerFunc {
 
 		var inputData *models.SongUpdateInput
 		if err := c.ShouldBind(&inputData); err != nil {
-			log.Error("Invalid query params", sl.Err(err))
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+			log.Error("Invalid body params", sl.Err(err))
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid body parameters"})
 			return
 		}
 
@@ -99,6 +99,25 @@ func (h *Handler) UpdateSong() gin.HandlerFunc {
 
 func (h *Handler) AddSong() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		panic("implement me")
+		ctx := c.Request.Context()
+		const OP = "SongsHandler.AddSong"
+		log := h.log.With(slog.String("OP", OP))
+
+		var inputData *models.SongInput
+		if err := c.ShouldBind(&inputData); err != nil {
+			log.Error("Invalid body params", sl.Err(err))
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid body parameters"})
+			return
+		}
+
+		songs, err := h.services.Songs.Add(ctx, inputData)
+		if err != nil {
+			log.Error("Failed to add song", sl.Err(err))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add song"})
+			return
+		}
+
+		log.Info("Successfully add song")
+		c.JSON(http.StatusOK, songs)
 	}
 }

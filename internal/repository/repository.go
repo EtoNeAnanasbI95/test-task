@@ -13,6 +13,7 @@ type Songs interface {
 	GetSongs(ctx context.Context, filter *models.SongFilter) ([]models.Song, error)
 	DeleteSong(ctx context.Context, id int) error
 	UpdateSong(ctx context.Context, id int, model *models.SongUpdateInput) error
+	AddSong(ctx context.Context, model *models.SongUpdateInput) (int, error)
 }
 
 type Repository struct {

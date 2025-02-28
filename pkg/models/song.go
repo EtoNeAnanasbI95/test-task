@@ -23,8 +23,8 @@ type SongFilter struct {
 	ReleaseDate string `form:"releaseDate" json:"release_date"`
 	Text        string `form:"text" json:"text"`
 	Link        string `form:"link" json:"link"`
-	Page        int    `form:"page,default=1" binding:"min=1" json:"page"`
-	PageSize    int    `form:"pageSize,default=10" binding:"min=1,max=100" json:"page_size"`
+	Offset      int    `form:"offset,default=0" binding:"min=0" json:"offset"`
+	Limit       int    `form:"limit,default=0" binding:"min=0" json:"limit"`
 }
 
 func (s *SongFilter) GetReleaseDate() string {

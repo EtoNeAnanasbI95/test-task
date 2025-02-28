@@ -21,6 +21,50 @@ func NewSongsRepository(l *slog.Logger, db *sqlx.DB) *SongsRepository {
 	}
 }
 
+func (r *SongsRepository) AddSong(ctx context.Context, model *models.SongUpdateInput) (int, error) {
+	const OP = "SongsRepository.AddSong"
+	log := r.log.With(slog.String("OP", OP))
+
+	log.Debug("Add new song", "new song", model)
+
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		log.Error("Failed to start transaction", sl.Err(err))
+		return 0, fmt.Errorf("%s: failed to start transaction: %w", OP, err)
+	}
+
+	query := `
+        INSERT INTO "Songs" ("group", "song", "release_date", "text", "link")
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING "id"`
+
+	var id int
+	err = tx.QueryRowxContext(ctx, query,
+		model.Group,
+		model.Song,
+		model.ReleaseDate,
+		model.Text,
+		model.Link,
+	).Scan(&id)
+
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			log.Error("Failed to rollback transaction", "rollback_error", rollbackErr, sl.Err(err))
+			return 0, fmt.Errorf("%s: failed to rollback after error: %w (original error: %w)", OP, rollbackErr, err)
+		}
+		log.Error("Failed to insert song", "query", query, sl.Err(err))
+		return 0, fmt.Errorf("%s: failed to insert song: %w", OP, err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Error("Failed to commit transaction", sl.Err(err))
+		return 0, fmt.Errorf("%s: failed to commit transaction: %w", OP, err)
+	}
+
+	log.Debug("Successfully inserted new song", "id", id)
+	return id, nil
+}
+
 func (r *SongsRepository) GetSongs(ctx context.Context, filter *models.SongFilter) ([]models.Song, error) {
 	const OP = "SongsRepository.GetSongs"
 	log := r.log.With(slog.String("OP", OP))
@@ -49,11 +93,13 @@ func (r *SongsRepository) GetSongs(ctx context.Context, filter *models.SongFilte
 		args = append(args, "%"+filter.ReleaseDate+"%")
 	}
 
-	// TODO: доделать пагинацию
-
-	if filter.Page != 1 {
+	if filter.Limit != 0 {
+		query += ` LIMIT ?`
+		args = append(args, filter.Limit)
 	}
-	if filter.PageSize != 1 {
+	if filter.Offset != 0 {
+		query += ` OFFSET ?`
+		args = append(args, filter.Offset)
 	}
 
 	query, args, err := sqlx.In(query, args...)
@@ -127,7 +173,7 @@ func (r *SongsRepository) DeleteSong(ctx context.Context, id int) error {
 	const OP = "SongsRepository.DeleteSong"
 	log := r.log.With(slog.String("OP", OP))
 
-	query := fmt.Sprintf(`DELETE FROM "%v" WHERE id = ?;`, songsTable)
+	query := fmt.Sprintf(`DELETE FROM "%v" WHERE "id" = ?;`, songsTable)
 	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Error("Failed to delete song", "query", query, sl.Err(err))
