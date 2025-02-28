@@ -14,6 +14,7 @@ type Songs interface {
 	DeleteSong(ctx context.Context, id int) error
 	UpdateSong(ctx context.Context, id int, model *models.SongUpdateInput) error
 	AddSong(ctx context.Context, model *models.SongUpdateInput) (int, error)
+	GetSongLyrics(ctx context.Context, id int, filter *models.LyricsInput) (string, error)
 }
 
 type Repository struct {

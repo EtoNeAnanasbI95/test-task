@@ -10,7 +10,7 @@ import (
 
 type Songs interface {
 	Add(ctx context.Context, model *models.SongInput) (int, error)
-	GetLyrics(ctx context.Context, id int) error
+	GetLyrics(ctx context.Context, id int, filter *models.LyricsInput) (string, error)
 	GetAll(ctx context.Context, filter *models.SongFilter) ([]models.Song, error)
 	Update(ctx context.Context, id int, model *models.SongUpdateInput) error
 	Delete(ctx context.Context, id int) error

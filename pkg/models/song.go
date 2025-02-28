@@ -50,6 +50,12 @@ type SongInput struct {
 	Song  string `json:"song"`
 }
 
+// LyricsInput - структура для пагинации куплетов песен, для GET запроса на получение теста песни
+type LyricsInput struct {
+	Offset int `form:"offset,default=0" binding:"min=0" json:"offset"`
+	Limit  int `form:"limit,default=0" binding:"min=0" json:"limit"`
+}
+
 type dateFormater interface {
 	GetReleaseDate() string
 }

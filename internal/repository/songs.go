@@ -7,6 +7,7 @@ import (
 	"github.com/EtoNeAnanasbI95/test-task/pkg/models"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
+	"strings"
 )
 
 type SongsRepository struct {
@@ -63,6 +64,53 @@ func (r *SongsRepository) AddSong(ctx context.Context, model *models.SongUpdateI
 
 	log.Debug("Successfully inserted new song", "id", id)
 	return id, nil
+}
+
+func (r *SongsRepository) GetSongLyrics(ctx context.Context, id int, filter *models.LyricsInput) (string, error) {
+	const OP = "SongsRepository.GetSongLyrics"
+	log := r.log.With(slog.String("OP", OP))
+
+	query := fmt.Sprintf(`SELECT "text" FROM "%v" WHERE "id" = ?`, songsTable)
+	args := []any{}
+	args = append(args, id)
+
+	query, args, err := sqlx.In(query, args...)
+	log.Debug("Created query", "query", query)
+	if err != nil {
+		log.Error("Arguments parse error", sl.Err(err))
+		return "", fmt.Errorf("%s: %w", OP, err)
+	}
+	query = r.db.Rebind(query)
+
+	var song models.Song
+	err = r.db.GetContext(ctx, &song, query, id)
+	if err != nil {
+		log.Error("Failed to fetch song", "query", query, sl.Err(err))
+		return "", fmt.Errorf("%s: %w", OP, err)
+	}
+
+	song.Text = strings.ReplaceAll(song.Text, "\\n", "\n")
+
+	log.Debug("Song fetched", slog.String("lyrics", song.Text))
+	lyrics := strings.Split(song.Text, "\n\n")
+
+	if filter.Offset != 0 || filter.Limit != 0 {
+		if filter.Offset >= len(lyrics) {
+			log.Warn(
+				"filter offset bigger then verse count",
+				slog.Int("verse count", len(lyrics)))
+			return "", nil
+		}
+
+		end := filter.Offset + filter.Limit
+		if end > len(lyrics) || filter.Limit == 0 {
+			end = len(lyrics)
+		}
+		lyrics = lyrics[filter.Offset:end]
+	}
+
+	log.Debug("Lyrics fetched", "verse count", len(lyrics))
+	return strings.Join(lyrics, ""), nil
 }
 
 func (r *SongsRepository) GetSongs(ctx context.Context, filter *models.SongFilter) ([]models.Song, error) {

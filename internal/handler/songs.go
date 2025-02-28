@@ -36,7 +36,34 @@ func (h *Handler) GetSongs() gin.HandlerFunc {
 
 func (h *Handler) GetSongLyrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		panic("implement me")
+		ctx := c.Request.Context()
+		const OP = "SongsHandler.GetSongLyrics"
+		log := h.log.With(slog.String("OP", OP))
+
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			log.Error("Invalid id query param", sl.Err(err))
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id query param"})
+			return
+		}
+
+		var filter *models.LyricsInput
+		if err := c.ShouldBindQuery(&filter); err != nil {
+			log.Error("Invalid query params", sl.Err(err))
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+			return
+		}
+
+		lyrics, err := h.services.Songs.GetLyrics(ctx, id, filter)
+		if err != nil {
+			log.Error("Failed to get song lyrics", sl.Err(err))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get song lyrics"})
+			return
+		}
+
+		log.Info("Successfully get song lyrics")
+		c.JSON(http.StatusOK, gin.H{"songLyrics": lyrics})
 	}
 }
 

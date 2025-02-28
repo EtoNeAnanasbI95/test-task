@@ -72,9 +72,29 @@ func (s *SongsService) Add(ctx context.Context, model *models.SongInput) (int, e
 	return id, nil
 }
 
-func (s *SongsService) GetLyrics(ctx context.Context, id int) error {
-	panic("implement me")
-	return nil
+func (s *SongsService) GetLyrics(ctx context.Context, id int, filter *models.LyricsInput) (string, error) {
+	const OP = "SongsService.GetLyrics"
+
+	log := s.log.With(
+		slog.String("OP", OP),
+		slog.Int("Song id", id))
+
+	log.Debug("Fetching lyrics", "filter", filter)
+
+	lyrics, err := s.repo.GetSongLyrics(ctx, id, filter)
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			log.Debug("Request cancelled by client")
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			log.Warn("Request timed out")
+		} else {
+			log.Error("Failed to fetch songs lyrics", sl.Err(err))
+		}
+		return "", fmt.Errorf("%s: %w", OP, err)
+	}
+
+	log.Debug("Song lyrics", "symbol count", len(lyrics))
+	return lyrics, nil
 }
 
 func (s *SongsService) GetAll(ctx context.Context, filter *models.SongFilter) ([]models.Song, error) {
