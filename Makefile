@@ -1,13 +1,11 @@
-CONNECTION_STRING ?= $(PGCONNECT)
+.PHONY: gen-mock
+.gen-mock:
+	mockery --name=ClientInterface --dir=api --output=internal/service/mocks --case=underscore
 
 .PHONY: migrations-up
 migrations-up:
 	# "postgres://user:password@localhost:5432/dbname?sslmode=disable"
 	migrate -database "$(CONNECTION_STRING)" -path migrations up
-
-.PHONY: gen-mock
-.gen-mock:
-	mockery --name=ClientInterface --dir=api --output=internal/service/mocks --case=underscore
 
 .PHONY: migrations-down
 migrations-down:
@@ -17,4 +15,16 @@ migrations-down:
 gen-swag:
 	@echo "Generate swagger docs"
 	@swag i -d ./cmd/ToDoCRUD/,./internal,./models
+	@echo "Done"
+
+.PHONY: api-migrate
+api-migrate:
+	@echo "Applying migrations"
+	@go run ./cmd/migrate/main.go --config "$(CONFIG_PATH)" --migrations "$(MIGRATIONS_PATH)"
+	@echo "Done"
+
+.PHONY: api-run
+api-run: api-migrate
+	@echo "Starting API"
+	@go run ./cmd/test-task/main.go --config "$(CONFIG_PATH)"
 	@echo "Done"
