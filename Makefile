@@ -5,6 +5,10 @@ migrations-up:
 	# "postgres://user:password@localhost:5432/dbname?sslmode=disable"
 	migrate -database "$(CONNECTION_STRING)" -path migrations up
 
+.PHONY: gen-mock
+.gen-mock:
+	mockery --name=ClientInterface --dir=api --output=internal/service/mocks --case=underscore
+
 .PHONY: migrations-down
 migrations-down:
 	migrate -database "$(CONNECTION_STRING)" -path migrations down
