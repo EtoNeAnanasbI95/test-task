@@ -6,6 +6,7 @@
 * zerolog
 * godotenv
 * cleanenv
+* migrate
 * samber/slog-zerolog
 * samber/slog-gin
 * swaggo/gin-swagger
@@ -19,7 +20,15 @@ API_PORT=8080
 API_TIMEOUT=5s
 EXTERNAL_API_URL_BASE=http://localhost
 ```
-* Если .env файл лежит в корне проекта или в одной директории с бинарником, то он подхватится автоматически, но можно явно указать путь до него с помощью флага `--config`
+* Для полного запуска, есть прописанная цель в makefile, чтобы запустить апи вместе с миграциями, необходимо запустить api-run цель, и прокинуть две переменные `CONFIG_PATH` и `MIGRATIONS_PATH`. 
+
+Пример:
+```shell
+make api-run CONFIG_PATH="./.env" MIGRATIONS_PATH="./migrations"
+```
+---
+## Ручной запуск api
+* Путь до .env файл нужно явно указать с помощью флага `--config`
 * Пример:
 ```shell
 go run ./cmd/test-task/main.go --config ./.env
@@ -28,4 +37,12 @@ go run ./cmd/test-task/main.go --config ./.env
 
 ```shell
 ./test-task --config ./.env
+```
+
+## Ручной запуск migrator
+* Путь до .env файл нужно явно указать с помощью флага `--config`
+* Путь до директории с миграциями нужно явно указать с помощью флага `--migrations`
+* Пример:
+```shell
+go run ./cmd/migrate/main.go --config ./.env --migrations ./migrations
 ```

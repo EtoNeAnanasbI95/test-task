@@ -14,7 +14,7 @@ migrations-down:
 .PHONY: gen-swag
 gen-swag:
 	@echo "Generate swagger docs"
-	@swag i -d ./cmd/ToDoCRUD/,./internal,./models
+	@swag init -g cmd/test-task/main.go
 	@echo "Done"
 
 .PHONY: api-migrate

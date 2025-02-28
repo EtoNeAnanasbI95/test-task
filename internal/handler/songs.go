@@ -9,6 +9,23 @@ import (
 	"strconv"
 )
 
+// GetSongs Получение списка песен
+// @Summary Получение списка песен
+// @Description Возвращает список песен с фильтрацией по всем полям и пагинацией
+// @Tags songs
+// @Accept json
+// @Produce json
+// @Param group query string false "Фильтр по группе"
+// @Param song query string false "Фильтр по названию песни"
+// @Param releaseDate query string false "Фильтр по дате релиза (формат: YYYY-MM-DD)"
+// @Param text query string false "Фильтр по тексту песни"
+// @Param link query string false "Фильтр по ссылке"
+// @Param offset query int false "Смещение для пагинации" default(0)
+// @Param limit query int false "Лимит записей" default(0)
+// @Success 200 {array} models.Song "Список песен"
+// @Failure 400 {object} map[string]string "Некорректные параметры запроса"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /songs [get]
 func (h *Handler) GetSongs() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -34,6 +51,19 @@ func (h *Handler) GetSongs() gin.HandlerFunc {
 	}
 }
 
+// GetSongLyrics Получение текста песни с пагинацией
+// @Summary Получение текста песни с пагинацией
+// @Description Возвращает текст песни, разделённый на куплеты, с пагинацией
+// @Tags songs
+// @Accept json
+// @Produce json
+// @Param id path int true "ID песни"
+// @Param offset query int false "Смещение для пагинации куплетов" default(0)
+// @Param limit query int false "Лимит куплетов" default(0)
+// @Success 200 {object} map[string][]string "Текст песни в виде массива куплетов"
+// @Failure 400 {object} map[string]string "Некорректные параметры запроса"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /songs/{id}/lyrics [get]
 func (h *Handler) GetSongLyrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -67,6 +97,17 @@ func (h *Handler) GetSongLyrics() gin.HandlerFunc {
 	}
 }
 
+// DeleteSong Удаление песни
+// @Summary Удаление песни
+// @Description Удаляет песню по указанному ID
+// @Tags songs
+// @Accept json
+// @Produce json
+// @Param id path int true "ID песни"
+// @Success 204 "Песня успешно удалена"
+// @Failure 400 {object} map[string]string "Некорректный ID"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /songs/{id} [delete]
 func (h *Handler) DeleteSong() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -92,6 +133,18 @@ func (h *Handler) DeleteSong() gin.HandlerFunc {
 	}
 }
 
+// UpdateSong Обновление данных песни
+// @Summary Обновление данных песни
+// @Description Обновляет данные песни по указанному ID
+// @Tags songs
+// @Accept json
+// @Produce json
+// @Param id path int true "ID песни"
+// @Param song body models.SongUpdateInput true "Данные для обновления"
+// @Success 204 "Песня успешно обновлена"
+// @Failure 400 {object} map[string]string "Некорректные параметры запроса"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /songs/{id} [put]
 func (h *Handler) UpdateSong() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -124,6 +177,17 @@ func (h *Handler) UpdateSong() gin.HandlerFunc {
 	}
 }
 
+// AddSong Добавление новой песни
+// @Summary Добавление новой песни
+// @Description Добавляет новую песню, обогащает данные через внешний API и сохраняет в БД
+// @Tags songs
+// @Accept json
+// @Produce json
+// @Param song body models.SongInput true "Данные новой песни"
+// @Success 200 {object} models.Song "Добавленная песня"
+// @Failure 400 {object} map[string]string "Некорректные параметры запроса"
+// @Failure 500 {object} map[string]string "Ошибка сервера"
+// @Router /songs [post]
 func (h *Handler) AddSong() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()

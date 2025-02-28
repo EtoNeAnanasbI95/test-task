@@ -1,3 +1,8 @@
+// @title Song Library API
+// @version 1.0
+// @description REST API для тестового задания в компанию Effective Mobile, имитирующая библиотеку песен
+// @host localhost:8080
+// @BasePath /api/v1
 package main
 
 import (
@@ -27,11 +32,6 @@ const (
 	envProd  = "prod"
 )
 
-// @title Song Library API
-// @version 1.0
-// @description REST API для онлайн-библиотеки песен
-// @host localhost:8080
-// @BasePath /api
 func main() {
 	projectRoot, err := os.Getwd()
 	if err != nil {

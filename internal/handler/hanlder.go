@@ -7,6 +7,8 @@ import (
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 	"log/slog"
+
+	_ "github.com/EtoNeAnanasbI95/test-task/docs"
 )
 
 type Handler struct {
