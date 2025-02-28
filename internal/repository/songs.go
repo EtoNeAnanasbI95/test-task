@@ -221,8 +221,15 @@ func (r *SongsRepository) DeleteSong(ctx context.Context, id int) error {
 	const OP = "SongsRepository.DeleteSong"
 	log := r.log.With(slog.String("OP", OP))
 
-	query := fmt.Sprintf(`DELETE FROM "%v" WHERE "id" = ?;`, songsTable)
-	_, err := r.db.ExecContext(ctx, query, id)
+	query := fmt.Sprintf(`DELETE FROM "%v" WHERE "id" = ?`, songsTable)
+	query, _, err := sqlx.In(query, id)
+	log.Debug("Created query", "query", query)
+	if err != nil {
+		log.Error("Arguments parse error", sl.Err(err))
+		return fmt.Errorf("%s: %w", OP, err)
+	}
+	query = r.db.Rebind(query)
+	_, err = r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Error("Failed to delete song", "query", query, sl.Err(err))
 		return fmt.Errorf("%s: %w", OP, err)
