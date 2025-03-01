@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/EtoNeAnanasbI95/test-task/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	"log"
@@ -30,13 +31,19 @@ func main() {
 	cfg := config.MustLoadConfig(flagEnvFilePath)
 	log.Println(cfg)
 
-	if cfg.ConnectionString == "" {
-		panic("connection string is required")
-	}
+	connectionString := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg.UserDB,
+		cfg.PasswordDB,
+		cfg.HostDB,
+		cfg.PortDB,
+		cfg.NameDB,
+		cfg.SslMode,
+	)
 
 	m, err := migrate.New(
 		"file://"+flagMigrationPath,
-		cfg.ConnectionString,
+		connectionString,
 	)
 	if err != nil {
 		panic(err)

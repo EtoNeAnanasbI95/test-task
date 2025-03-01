@@ -41,7 +41,6 @@ func main() {
 	var flagEnvFilePath string
 	flag.StringVar(&flagEnvFilePath, "config", envFilePath, "path to config file")
 	flag.Parse()
-	log.Println(flagEnvFilePath)
 	cfg := config.MustLoadConfig(flagEnvFilePath)
 	log.Println(cfg)
 
@@ -51,9 +50,19 @@ func main() {
 		slog.String("env", cfg.Env),
 		slog.Int("port", cfg.ApiPort))
 
-	db := storage.MustInitDB(cfg.ConnectionString)
+	connectionString := fmt.Sprintf(
+		"host=%v port=%v dbname=%v user=%v password=%v sslmode=%v",
+		cfg.HostDB,
+		cfg.PortDB,
+		cfg.NameDB,
+		cfg.UserDB,
+		cfg.PasswordDB,
+		cfg.SslMode,
+	)
+
+	db := storage.MustInitDB(cfg.DBMS, connectionString)
 	log.Debug("Init db connection",
-		slog.String("dsn", cfg.ConnectionString))
+		slog.String("dsn", connectionString))
 
 	r := repository.NewRepository(log, db)
 	log.Info("Init repository layer")

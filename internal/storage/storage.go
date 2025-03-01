@@ -5,8 +5,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func MustInitDB(cs string) *sqlx.DB {
-	db, err := sqlx.Connect("postgres", cs)
+func MustInitDB(dbms string, cs string) *sqlx.DB {
+	db, err := sqlx.Connect(dbms, cs)
 	if err != nil {
 		panic(err.Error())
 	}
