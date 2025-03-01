@@ -3,6 +3,7 @@
 
 # Библиотеки
 * gin
+* sqlx
 * zerolog
 * godotenv
 * cleanenv
