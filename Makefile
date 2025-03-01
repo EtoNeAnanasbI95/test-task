@@ -28,3 +28,15 @@ api-run: api-migrate
 	@echo "Starting API"
 	@go run ./cmd/test-task/main.go --config "$(CONFIG_PATH)"
 	@echo "Done"
+
+.PHONY: run-api-docker-compose-prod
+run-api-docker-compose-prod:
+	docker compose up -d --build
+
+.PHONY: build-api-docker-compose
+build-api-docker-compose:
+	docker compose build
+
+.PHONY: run-api-docker-compose
+run-api-docker-compose:
+	docker compose up -d
